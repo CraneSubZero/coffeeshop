@@ -169,3 +169,83 @@
        flex-direction: column;
        gap: 10px;
    }
+
+   /* Order Tracking */
+.order-tracking {
+    background-color: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.tracking-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.tracking-progress {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.tracking-progress::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #eee;
+    z-index: 1;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #eee;
+    border: 3px solid #eee;
+    margin-bottom: 0.5rem;
+}
+
+.step-label {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.step.active .step-circle {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.step.completed .step-circle {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.step.completed::before {
+    content: '✓';
+    color: white;
+    position: absolute;
+    top: 5px;
+    font-size: 0.8rem;
+}
+
+.eta {
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-top: 1rem;
+}

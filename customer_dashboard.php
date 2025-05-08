@@ -516,6 +516,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             </form>
         </div>
     </div>
+
+        <!-- Order Tracking Section -->
+    <section class="section order-tracking">
+        <h2>Your Current Orders</h2>
+        <div class="tracking-container">
+            <?php
+            // Get current user's active orders
+            if (isset($_SESSION['fullname'])) {
+                $customer_name = $_SESSION['fullname'];
+                $active_orders = $db->query("SELECT id, order_date, status FROM orders 
+                                        WHERE customer_name = '$customer_name' 
+                                        AND status IN ('pending', 'preparing', 'ready') 
+                                        ORDER BY order_date DESC");
+                
+                if ($active_orders->num_rows > 0) {
+                    while ($order = $active_orders->fetch_assoc()) {
+                        echo '<div class="tracking-card">';
+                        echo '<h3>Order #' . $order['id'] . '</h3>';
+                        echo '<p>Placed: ' . date('M d, Y h:i A', strtotime($order['order_date'])) . '</p>';
+                        
+                        // Tracking progress
+                        echo '<div class="tracking-progress">';
+                        $steps = ['pending', 'preparing', 'ready', 'completed'];
+                        foreach ($steps as $step) {
+                            $active = $order['status'] == $step ? 'active' : '';
+                            $completed = array_search($step, $steps) < array_search($order['status'], $steps) ? 'completed' : '';
+                            echo '<div class="step ' . $active . ' ' . $completed . '">';
+                            echo '<div class="step-circle"></div>';
+                            echo '<div class="step-label">' . ucfirst($step) . '</div>';
+                            echo '</div>';
+                        }
+                        echo '</div>';
+                        
+                        // Estimated time
+                        $eta = '';
+                        switch ($order['status']) {
+                            case 'pending':
+                                $eta = 'Estimated preparation start: 5-10 minutes';
+                                break;
+                            case 'preparing':
+                                $eta = 'Estimated ready in: 10-15 minutes';
+                                break;
+                            case 'ready':
+                                $eta = 'Your order is ready for pickup!';
+                                break;
+                        }
+                        echo '<p class="eta">' . $eta . '</p>';
+                        echo '</div>';
+                    }
+                } else {
+                    echo '<p>You have no active orders.</p>';
+                }
+            }
+            ?>
+        </div>
+    </section>
     
     <script>
         // Global variables
