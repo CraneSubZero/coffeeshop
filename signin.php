@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['fullname'] = $fullname;
 
             // Redirect based on user type
-            if ($email == "maepacquiao0405@gmail.com") {
+            if ($email == "info@kafeakiosk.com") {
                 header("Location: admin_dashboard.php");
             } else {
                 header("Location: customer_dashboard.php");
@@ -70,6 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </a>
         <div class="nav-links">
             <a href="main.php">Home</a>
+
         </div>
     </div>
     <div class="bg-img">
