@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 10, 2025 at 11:15 AM
+-- Generation Time: May 19, 2025 at 11:45 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -20,6 +20,50 @@ SET time_zone = "+00:00";
 --
 -- Database: `coffee_shop`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cart`
+--
+
+CREATE TABLE `cart` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `item_name` varchar(100) NOT NULL,
+  `cup_size` varchar(20) NOT NULL,
+  `sugar_level` varchar(20) NOT NULL,
+  `add_ons` text NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `menu_items`
+--
+
+CREATE TABLE `menu_items` (
+  `id` int(11) NOT NULL,
+  `item_name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  `is_available` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `menu_items`
+--
+
+INSERT INTO `menu_items` (`id`, `item_name`, `description`, `price`, `image_path`, `is_available`, `created_at`) VALUES
+(2, 'Affogato', 'wala lang', 50.00, 'uploads/menu_items/682af546395a63.16513726.jpg', 1, '2025-05-19 09:09:26'),
+(3, 'Cafe Latte', 'latte', 65.00, 'uploads/menu_items/682afa86e133e6.42439620.jpg', 1, '2025-05-19 09:31:50'),
+(4, 'Danish', 'Bread', 50.00, 'uploads/menu_items/682afbe0d0bd82.33837040.jpg', 1, '2025-05-19 09:37:36');
 
 -- --------------------------------------------------------
 
@@ -53,6 +97,18 @@ INSERT INTO `users` (`id`, `fullname`, `email`, `phone`, `password`, `reset_toke
 --
 
 --
+-- Indexes for table `cart`
+--
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `menu_items`
+--
+ALTER TABLE `menu_items`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -63,6 +119,18 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `cart`
+--
+ALTER TABLE `cart`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `menu_items`
+--
+ALTER TABLE `menu_items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
