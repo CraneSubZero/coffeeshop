@@ -184,8 +184,8 @@ if (isset($_GET['delete'])) {
         }
         
        .container {
-    max-width: 1200px;
-    width: 100%;
+    max-width: 1400px;
+    width: 95%;
     margin: 2rem auto;
     padding: 0 2rem;
     box-sizing: border-box;
@@ -242,7 +242,7 @@ if (isset($_GET['delete'])) {
             padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
         
         .form-group {
@@ -323,15 +323,15 @@ if (isset($_GET['delete'])) {
             /* Menu items table */
         .menu-items-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 2rem;
+            min-width: 1100px;
+            margin-top: 2.5rem;
             background-color: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
         .menu-items-table th, 
         .menu-items-table td {
-            padding: 1rem;
+            padding: 1.25rem 2rem;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
@@ -363,12 +363,17 @@ if (isset($_GET['delete'])) {
         }
         
         .action-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-right: 0.5rem;
+            margin-right: 0; /* Remove any margin that may cause stacking */
+            min-width: 80px; /* Ensures buttons are wide enough */
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem; /* Space between buttons */
+            align-items: center;
         }
         
         .edit-btn {
@@ -395,6 +400,48 @@ if (isset($_GET['delete'])) {
         .alert-error {
             background-color: #f8d7da;
             color: #721c24;
+        }
+
+        /* Space out the DataTables search bar */
+        .dataTables_filter {
+            margin-bottom: 1.5rem !important;
+            float: right !important;
+        }
+
+        /* Space out the DataTables length selector */
+        .dataTables_length {
+            margin-bottom: 1.5rem !important;
+        }
+
+        /* Ensure the table is not too close to the top */
+        #menuItemsTable_wrapper {
+            margin-top: 2rem;
+        }
+
+        /* Set min-widths for columns for better spacing */
+        .menu-items-table th:nth-child(1), 
+        .menu-items-table td:nth-child(1) {
+            min-width: 100px; /* Image */
+        }
+        .menu-items-table th:nth-child(2), 
+        .menu-items-table td:nth-child(2) {
+            min-width: 160px; /* Item Name */
+        }
+        .menu-items-table th:nth-child(3), 
+        .menu-items-table td:nth-child(3) {
+            min-width: 300px; /* Description */
+        }
+        .menu-items-table th:nth-child(4), 
+        .menu-items-table td:nth-child(4) {
+            min-width: 90px; /* Price */
+        }
+        .menu-items-table th:nth-child(5), 
+        .menu-items-table td:nth-child(5) {
+            min-width: 110px; /* Status */
+        }
+        .menu-items-table th:nth-child(6), 
+        .menu-items-table td:nth-child(6) {
+            min-width: 160px; /* Actions */
         }
     </style>
 </head>
@@ -511,14 +558,14 @@ if (isset($_GET['delete'])) {
                                 <?php endif; ?>
                             </td>
                             <td>
-                            <a href="?edit=<?php echo $item['id']; ?>" class="action-btn edit-btn">
-    <i class="fas fa-edit"></i> Edit
-</a>
-
-<a href="?delete=<?php echo $item['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Delete this item?');">
-    <i class="fas fa-trash"></i> Delete
-</a>
-
+                                <div class="action-buttons">
+                                    <a href="?edit=<?php echo $item['id']; ?>" class="action-btn edit-btn">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="?delete=<?php echo $item['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Delete this item?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
