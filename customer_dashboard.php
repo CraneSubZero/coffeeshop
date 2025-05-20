@@ -8,33 +8,80 @@ if (!isset($_SESSION['id'])) {
 }
 
 // Database connection
-require_once 'connection/config.php'; // Assuming you have a file with database connection
+require_once 'connection/config.php';
 
-// Fetch user data from database
 $user_id = $_SESSION['id'];
 $user_fullname = '';
-
+$menu_items = [];
 
 try {
+    // Fetch user info
     $stmt = $conn->prepare("SELECT fullname FROM users WHERE id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
     
+    $stmt->bind_param("i", $user_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
     if ($result->num_rows > 0) {
         $user_data = $result->fetch_assoc();
         $user_fullname = $user_data['fullname'] ?? '';
-      
-        
-        // Update session with fresh data if needed
         $_SESSION['user_fullname'] = $user_fullname;
     }
     $stmt->close();
+
+    // Fetch menu items
+    $stmt = $conn->prepare("SELECT id, item_name, description, price, image_path FROM menu_items WHERE is_available = 1");
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $menu_items[] = $row;
+    }
+    $stmt->close();
+    
 } catch (Exception $e) {
-    // Handle error (you might want to log this)
-    error_log("Error fetching user data: " . $e->getMessage());
+    error_log("Database error: " . $e->getMessage());
+    // You might want to show a user-friendly message
+    $error_message = "We're experiencing technical difficulties. Please try again later.";
+} finally {
+
+}
+// Check for order status message
+$order_status = $_SESSION['order_status'] ?? null;
+if (isset($_SESSION['order_status'])) {
+    unset($_SESSION['order_status']);
 }
 
+// Get cart item count
+$cart_count = 0;
+try {
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) as count 
+        FROM cart_items ci
+        JOIN carts c ON ci.cart_id = c.id
+        WHERE c.user_id = ?
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $cart_count = $result->fetch_assoc()['count'] ?? 0;
+    $stmt->close();
+} catch (Exception $e) {
+    error_log("Cart count error: " . $e->getMessage());
+}
+
+// ✅ Corrected: close connection AFTER all DB operations
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -111,32 +158,131 @@ $conn->close();
             margin: 2rem auto;
             padding: 0 1rem;
         }
-        
-        .user-info {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-top: 1rem;
+
+        h1, h2 {
+            color: var(--primary-color);
         }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .menu-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .menu-card img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .menu-card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .menu-card p {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .price {
+            display: inline-block;
+            margin-top: 1rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            font-size: 1.1rem;
+        }
+           .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .success-message {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 20px 0;
+    text-align: center;
+}
+
     </style>
 </head>
 <body>
-    <div class="navbar">
+     <div class="navbar">
         <div class="navbar-brand">
             <img src="assets/img/icon_t.png" alt="Kafèa-Kiosk Logo">
         </div>
-        <div class="profile-section">
-            <i class="fas fa-user-circle user-icon"></i>
-            <span class="username"><?php echo htmlspecialchars($user_fullname); ?></span>
-            <button class="logout-btn" onclick="confirmLogout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-        </div>
+   <div class="profile-section">
+    <i class="fas fa-user-circle user-icon"></i>
+    <span class="username"><?php echo htmlspecialchars($user_fullname); ?></span>
+    <a href="cart_view.php" class="cart-btn">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count"><?php echo $cart_count; ?></span>
+    </a>
+    <button class="logout-btn" onclick="confirmLogout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+</div>
     </div>
 
     <div class="container">
-        <h1>Dashboard</h1>
+        <?php if (isset($error_message)): ?>
+            <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
+        <?php endif; ?>
+        
+        <h1>Welcome, <?php echo htmlspecialchars($user_fullname); ?>!</h1>
+        <?php if ($order_status): ?>
+   <div class="<?php echo $order_status['success'] ? 'success-message' : 'error-message'; ?>">
+
+        <?php echo htmlspecialchars($order_status['message']); ?>
+    </div>
+<?php endif; ?>
+        <h2>Coffee Menu</h2>
+
+        <div class="menu-grid">
+            <?php if (!empty($menu_items)): ?>
+                <?php foreach ($menu_items as $item): ?>
+                    <div class="menu-card" data-id="<?php echo htmlspecialchars($item['id']); ?>">
+                        <?php if (!empty($item['image_path'])): ?>
+                            <img src="<?php echo htmlspecialchars($item['image_path']); ?>" alt="<?php echo htmlspecialchars($item['item_name']); ?>">
+                        <?php else: ?>
+                            <img src="assets/img/placeholder.jpg" alt="No image available">
+                        <?php endif; ?>
+                        <h3><?php echo htmlspecialchars($item['item_name']); ?></h3>
+                        <p><?php echo htmlspecialchars($item['description']); ?></p>
+                        <span class="price">₱<?php echo number_format($item['price'], 2); ?></span>
+                        <br>
+                        <button class="add-to-cart" style="margin-top: 10px; padding: 5px 10px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Add to Cart
+                        </button>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No menu items available at the moment.</p>
+            <?php endif; ?>
+        </div>
     </div>
 
     <script>
@@ -151,6 +297,36 @@ $conn->close();
                         window.location.href = 'signin.php';
                     });
             }
+        }
+
+        // Add to cart functionality
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                const menuItemId = this.closest('.menu-card').dataset.id;
+                addToCart(menuItemId);
+            });
+        });
+
+        function addToCart(itemId) {
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ item_id: itemId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Item added to cart!');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add item to cart'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding to cart');
+            });
         }
     </script>
 </body>
