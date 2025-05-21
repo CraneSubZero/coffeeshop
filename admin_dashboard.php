@@ -66,8 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->close();
     } else {
     // Insert into database
-    $stmt = $conn->prepare("INSERT INTO menu_items (item_name, description, price, image_path, is_available) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssdsi", $item_name, $description, $price, $image_path, $is_available);
+   $stmt = $conn->prepare("INSERT INTO menu_items (item_name, description, price, image_path, is_available, category) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("ssdsi", $item_name, $description, $price, $image_path, $is_available, $category);
+
         if ($stmt->execute()) {
             $success_message = "Menu item added successfully!";
         } else {
@@ -496,9 +497,20 @@ if (isset($_GET['delete'])) {
     </div>
 
     <div class="form-group">
-        <label for="image">Image <?php if ($edit_mode): ?> (leave blank to keep current)<?php endif; ?></label>
-        <input type="file" id="image" name="image" class="form-control" accept="image/*">
-    </div>
+    <label for="image">Image <?php if ($edit_mode): ?> (leave blank to keep current)<?php endif; ?></label>
+    <input type="file" id="image" name="image" class="form-control" accept="image/*">
+</div>
+
+<div class="form-group">
+    <label for="category">Category</label>
+    <select id="category" name="category" class="form-control" required>
+       <option value="" disabled selected>-- Select Category --</option>
+        <option value="Pastry" <?php echo (isset($edit_item['category']) && $edit_item['category'] == 'Pastry') ? 'selected' : ''; ?>>Pastry</option>
+        <option value="Coffee" <?php echo (isset($edit_item['category']) && $edit_item['category'] == 'Coffee') ? 'selected' : ''; ?>>Coffee</option>
+    </select>
+</div>
+
+
 
     <div class="form-group">
         <label for="is_available">Status</label>
