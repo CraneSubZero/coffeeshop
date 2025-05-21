@@ -30,7 +30,7 @@ try {
     
     // Get cart items with prices
     $stmt = $conn->prepare("
-        SELECT ci.menu_item_id, ci.quantity, mi.price, mi.item_name 
+        SELECT ci.menu_item_id, ci.quantity, mi.price 
         FROM cart_items ci
         JOIN menu_items mi ON ci.menu_item_id = mi.id
         WHERE ci.cart_id = ?
@@ -50,7 +50,7 @@ try {
     }
     
     // Create order
-    $stmt = $conn->prepare("INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'pending')");
+    $stmt = $conn->prepare("INSERT INTO orders (user_id, total_amount) VALUES (?, ?)");
     $stmt->bind_param("id", $user_id, $total);
     $stmt->execute();
     $order_id = $conn->insert_id;
@@ -62,40 +62,23 @@ try {
         $stmt->execute();
     }
     
-    // Clear cart items
+    // Clear cart (optional - you might want to keep cart history)
     $stmt = $conn->prepare("DELETE FROM cart_items WHERE cart_id = ?");
-    $stmt->bind_param("i", $cart_id);
-    $stmt->execute();
-    
-    // Delete the cart
-    $stmt = $conn->prepare("DELETE FROM carts WHERE id = ?");
     $stmt->bind_param("i", $cart_id);
     $stmt->execute();
     
     // Commit transaction
     $conn->commit();
     
-    // Set success message
-    $_SESSION['order_status'] = [
-        'success' => true,
-        'message' => "Order #" . $order_id . " placed successfully! Your order is being prepared.",
-        'order_id' => $order_id
-    ];
-    
-    // Redirect to order confirmation page
-    header("Location: order_confirmation.php?id=" . $order_id);
-    exit();
+    $success = "Order placed successfully! Order ID: #" . $order_id;
     
 } catch (Exception $e) {
-    // Rollback transaction on error
     $conn->rollback();
-    $_SESSION['order_status'] = [
-        'success' => false,
-        'message' => "Error processing order: " . $e->getMessage()
-    ];
-    header("Location: cart_view.php");
-    exit();
+    $error = "Error processing order: " . $e->getMessage();
 }
 
-$conn->close();
+// Redirect back with status
+$_SESSION['order_status'] = ['success' => empty($error), 'message' => $error ?: $success];
+header("Location: customer_dashboard.php");
+exit();
 ?>
