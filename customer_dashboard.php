@@ -35,7 +35,8 @@ try {
     $stmt->close();
 
     // Fetch menu items
-    $stmt = $conn->prepare("SELECT id, item_name, description, price, image_path FROM menu_items WHERE is_available = 1");
+    $stmt = $conn->prepare("SELECT id, item_name, description, price, image_path, is_available FROM menu_items");
+
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
@@ -264,7 +265,8 @@ $conn->close();
         <div class="menu-grid">
             <?php if (!empty($menu_items)): ?>
                 <?php foreach ($menu_items as $item): ?>
-                    <div class="menu-card" data-id="<?php echo htmlspecialchars($item['id']); ?>">
+<div class="menu-card" data-id="<?php echo htmlspecialchars($item['id']); ?>" style="<?php echo !$item['is_available'] ? 'opacity: 0.6;' : ''; ?>">
+
                         <?php if (!empty($item['image_path'])): ?>
                             <img src="<?php echo htmlspecialchars($item['image_path']); ?>" alt="<?php echo htmlspecialchars($item['item_name']); ?>">
                         <?php else: ?>
@@ -274,9 +276,16 @@ $conn->close();
                         <p><?php echo htmlspecialchars($item['description']); ?></p>
                         <span class="price">₱<?php echo number_format($item['price'], 2); ?></span>
                         <br>
-                        <button class="add-to-cart" style="margin-top: 10px; padding: 5px 10px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Add to Cart
-                        </button>
+                       <?php if ($item['is_available']): ?>
+    <button class="add-to-cart" style="margin-top: 10px; padding: 5px 10px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Add to Cart
+    </button>
+<?php else: ?>
+    <div style="margin-top: 10px; padding: 5px 10px; background: #ccc; color: #333; border-radius: 4px;">
+        Not Available
+    </div>
+<?php endif; ?>
+
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
