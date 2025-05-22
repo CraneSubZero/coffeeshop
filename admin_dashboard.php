@@ -451,6 +451,10 @@ if (isset($_GET['delete'])) {
         <a href="#" class="navbar-brand">
             <img src="assets/img/icon_t.png" alt="Kafèa-Kiosk Logo">
         </a>
+        <div class="nav-links">
+            <a href="admin_dashboard.php">Add Item</a>
+            <a href="orders.php">Orders</a>
+        </div>
         <div class="profile-section">
             <i class="fas fa-user-circle user-icon"></i>
             <span class="username"><?php echo htmlspecialchars($user['fullname']); ?></span>

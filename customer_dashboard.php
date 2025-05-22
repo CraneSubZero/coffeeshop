@@ -11,6 +11,7 @@ require_once 'connection/config.php';
 $user_id = $_SESSION['id'];
 $user_fullname = '';
 $menu_items_by_category = [];
+$error_message = ''; // Initialize error message variable
 
 try {
     // Fetch user info
@@ -71,11 +72,16 @@ try {
         JOIN carts c ON ci.cart_id = c.id
         WHERE c.user_id = ? AND c.status = 'active'
     ");
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
     $stmt->bind_param("i", $user_id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
     $result = $stmt->get_result();
-    $cart_count = $result->fetch_assoc()['total_quantity'] ?? 0;
-    $cart_count = $cart_count ?: 0; // Ensure it's zero if null
+    $cart_data = $result->fetch_assoc();
+    $cart_count = $cart_data['total_quantity'] ?? 0;
     $stmt->close();
 } catch (Exception $e) {
     error_log("Cart count error: " . $e->getMessage());
@@ -353,6 +359,19 @@ $conn->close();
         .cart-btn:hover {
             opacity: 0.8;
         }
+
+        .history-btn {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.history-btn:hover {
+    opacity: 0.8;
+}
+
     </style>
 </head>
 <body>
@@ -360,24 +379,24 @@ $conn->close();
         <div class="navbar-brand">
             <img src="assets/img/icon_t.png" alt="Kafèa-Kiosk Logo">
         </div>
-       <div class="profile-section">
-    <i class="fas fa-user-circle user-icon"></i>
-    <span class="username"><?php echo htmlspecialchars($user_fullname); ?></span>
-    <a href="order_history.php" class="history-btn">
-        <i class="fas fa-history"></i> History
-    </a>
-    <a href="cart_view.php" class="cart-btn">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="cart-count"><?php echo $cart_count; ?></span>
-    </a>
-    <button class="logout-btn" onclick="confirmLogout()">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
-</div>
+        <div class="profile-section">
+            <i class="fas fa-user-circle user-icon"></i>
+            <span class="username"><?php echo htmlspecialchars($user_fullname); ?></span>
+            <a href="order_history.php" class="history-btn">
+                <i class="fas fa-history"></i> History
+            </a>
+            <a href="cart_view.php" class="cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count"><?php echo $cart_count; ?></span>
+            </a>
+            <button class="logout-btn" onclick="confirmLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
     </div>
 
     <div class="container">
-        <?php if (isset($error_message)): ?>
+        <?php if (!empty($error_message)): ?>
             <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
         <?php endif; ?>
 
