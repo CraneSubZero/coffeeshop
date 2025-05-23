@@ -67,7 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
     // Insert into database
    $stmt = $conn->prepare("INSERT INTO menu_items (item_name, description, price, image_path, is_available, category) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("ssdsi", $item_name, $description, $price, $image_path, $is_available, $category);
+$stmt->bind_param("sssdis", $item_name, $description, $price, $image_path, $is_available, $category);
+
 
         if ($stmt->execute()) {
             $success_message = "Menu item added successfully!";
@@ -565,7 +566,7 @@ if (isset($_GET['delete'])) {
                             </td>
                             <td><?php echo htmlspecialchars($item['item_name']); ?></td>
                             <td><?php echo htmlspecialchars($item['description']); ?></td>
-                            <td>$<?php echo number_format($item['price'], 2); ?></td>
+                            <td>₱<?php echo number_format($item['price'], 2); ?></td>
                             <td>
                                 <?php if ($item['is_available']): ?>
                                     <span class="status-available">Available</span>
