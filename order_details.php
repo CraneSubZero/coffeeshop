@@ -52,23 +52,25 @@ $items_stmt->bind_param("i", $order_id);
 $items_stmt->execute();
 $items_result = $items_stmt->get_result();
 
+// Merge duplicate items by item_name
 $order_items = [];
 while ($row = $items_result->fetch_assoc()) {
     $item_name = $row['item_name'];
     if (isset($order_items[$item_name])) {
-        // Merge quantities and sum total price
+        // Increase quantity and add total price (price * quantity)
         $order_items[$item_name]['quantity'] += $row['quantity'];
         $order_items[$item_name]['price'] += $row['price'] * $row['quantity'];
     } else {
+        // Add new item, set price as total for quantity
         $order_items[$item_name] = [
             'item_name' => $item_name,
             'quantity' => $row['quantity'],
-            'price' => $row['price'] * $row['quantity'],  // total price for that quantity
+            'price' => $row['price'] * $row['quantity'],
         ];
     }
 }
 
-// Re-index array for easier looping in HTML
+// Re-index to numeric array for easier iteration
 $order_items = array_values($order_items);
 ?>
 
@@ -192,10 +194,6 @@ $order_items = array_values($order_items);
         <a href="#" class="navbar-brand">
             <img src="assets/img/icon_t.png" alt="Kafèa-Kiosk Logo">
         </a>
-        <div class="nav-links">
-            <a href="admin_dashboard.php">Add Item</a>
-            <a href="orders.php">Orders</a>
-        </div>
         <div class="profile-section">
             <i class="fas fa-user-circle user-icon"></i>
             <span class="username"><?= htmlspecialchars($user['fullname']) ?></span>
@@ -206,7 +204,7 @@ $order_items = array_values($order_items);
     </div>
 
     <div class="content">
-        <a href="orders.php" class="back-btn">&larr; Back to Orders</a>
+        <a href="order_history.php" class="back-btn">&larr; Back to Orders</a>
 
         <h1>Order #<?= $order_id ?> Details</h1>
 
@@ -217,7 +215,7 @@ $order_items = array_values($order_items);
         <p><strong>Address:</strong> <?= htmlspecialchars($order['delivery_address']) ?></p>
         <p><strong>Contact:</strong> <?= htmlspecialchars($order['contact_number']) ?></p>
         <p><strong>Instructions:</strong> <?= htmlspecialchars($order['special_instructions']) ?></p>
-          <p><strong>Status:</strong> <?= htmlspecialchars($order['status']) ?></p>
+            <p><strong>Status:</strong> <?= htmlspecialchars($order['status']) ?></p>
 
         <h2>Ordered Items</h2>
         <?php if (!empty($order_items)): ?>

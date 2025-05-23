@@ -371,6 +371,37 @@ $conn->close();
 .history-btn:hover {
     opacity: 0.8;
 }
+  .search-container {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .search-bar {
+        width: 100%;
+        max-width: 500px;
+        padding: 10px 15px;
+        border: 2px solid var(--primary-color);
+        border-radius: 25px;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.3s;
+    }
+    
+    .search-bar:focus {
+        box-shadow: 0 0 8px rgba(111, 78, 55, 0.3);
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 20px;
+        color: var(--dark-color);
+        font-style: italic;
+    }
+    
+    .hidden {
+        display: none;
+    }
 
     </style>
 </head>
@@ -396,6 +427,9 @@ $conn->close();
     </div>
 
     <div class="container">
+        <div class="search-container">
+    <input type="text" id="searchInput" class="search-bar" placeholder="Search for drinks, pastries..." oninput="searchMenuItems()">
+</div>
         <?php if (!empty($error_message)): ?>
             <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
         <?php endif; ?>
@@ -697,6 +731,76 @@ $conn->close();
                 alert('An error occurred while adding to cart. Please try again.');
             });
         }
+        function searchMenuItems() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const menuCards = document.querySelectorAll('.menu-card');
+        let hasResults = false;
+        
+        menuCards.forEach(card => {
+            const itemName = card.querySelector('h3').textContent.toLowerCase();
+            const description = card.querySelector('p').textContent.toLowerCase();
+            
+            if (itemName.includes(searchTerm) || description.includes(searchTerm)) {
+                card.style.display = '';
+                hasResults = true;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Show/hide category headers based on visibility of their items
+        document.querySelectorAll('h2').forEach(header => {
+            const category = header.textContent;
+            const nextElement = header.nextElementSibling;
+            
+            if (nextElement && nextElement.classList.contains('menu-grid')) {
+                const visibleItems = nextElement.querySelectorAll('.menu-card:not([style*="display: none"])').length;
+                header.style.display = visibleItems > 0 ? '' : 'none';
+                nextElement.style.display = visibleItems > 0 ? '' : 'none';
+                
+                if (visibleItems > 0) hasResults = true;
+            }
+        });
+        
+        // Show "no results" message if needed
+        const noResultsElement = document.getElementById('noResultsMessage');
+        if (!hasResults) {
+            if (!noResultsElement) {
+                const container = document.querySelector('.container');
+                const message = document.createElement('div');
+                message.id = 'noResultsMessage';
+                message.className = 'no-results';
+                message.textContent = 'No items found matching your search.';
+                container.appendChild(message);
+            }
+        } else if (noResultsElement) {
+            noResultsElement.remove();
+        }
+    }
+    
+    // Optional: Add a clear search button
+    function addClearSearchButton() {
+        const searchContainer = document.querySelector('.search-container');
+        const clearButton = document.createElement('button');
+        clearButton.innerHTML = '<i class="fas fa-times"></i>';
+        clearButton.style.marginLeft = '10px';
+        clearButton.style.background = 'none';
+        clearButton.style.border = 'none';
+        clearButton.style.cursor = 'pointer';
+        clearButton.style.color = 'var(--primary-color)';
+        clearButton.style.fontSize = '1.2rem';
+        clearButton.title = 'Clear search';
+        
+        clearButton.addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            searchMenuItems();
+        });
+        
+        searchContainer.appendChild(clearButton);
+    }
+    
+    // Initialize the clear button when DOM is loaded
+    document.addEventListener('DOMContentLoaded', addClearSearchButton);
     </script>
 </body>
 </html>
